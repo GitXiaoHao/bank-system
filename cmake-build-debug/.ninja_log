@@ -1,0 +1,16 @@
+# ninja log v5
+11	103	6985188505417601	CMakeFiles/curriculum_cpp.dir/realization/times.cpp.obj	697e748b26a12753
+17	731	6985143005921332	CMakeFiles/curriculum_cpp.dir/realization/graph_main.cpp.obj	ed3004fcd4c12c7d
+2	732	6985803226220443	CMakeFiles/curriculum_cpp.dir/realization/bank.cpp.obj	449291cad69c3e8f
+9	710	6985803225984958	CMakeFiles/curriculum_cpp.dir/main.cpp.obj	86a2253f00a27f82
+11	762	6985095049248886	CMakeFiles/curriculum_cpp.dir/realization/sys.cpp.obj	db610945215297da
+732	907	6985803227898005	curriculum_cpp.exe	ace39e1f9caa1e3d
+17	763	6985119708992868	CMakeFiles/curriculum_cpp.dir/realization/button_main.cpp.obj	451e6d2230a02b50
+2	755	6985808065730660	CMakeFiles/curriculum_cpp.dir/realization/bank.cpp.obj	449291cad69c3e8f
+765	985	6985808067978947	curriculum_cpp.exe	ace39e1f9caa1e3d
+3	699	6985811219379680	CMakeFiles/curriculum_cpp.dir/realization/bank.cpp.obj	449291cad69c3e8f
+699	865	6985811220989043	curriculum_cpp.exe	ace39e1f9caa1e3d
+2	766	6985812013100419	CMakeFiles/curriculum_cpp.dir/realization/bank.cpp.obj	449291cad69c3e8f
+766	990	6985812015272013	curriculum_cpp.exe	ace39e1f9caa1e3d
+3	853	6985813118975234	CMakeFiles/curriculum_cpp.dir/realization/bank.cpp.obj	449291cad69c3e8f
+853	1064	6985813121023295	curriculum_cpp.exe	ace39e1f9caa1e3d
