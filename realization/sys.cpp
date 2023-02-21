@@ -15,12 +15,6 @@ void hide_console_cursor() {
                          &cursor_info);
 }
 
-void no_big_small() {
-    HWND hWnd = GetConsoleWindow(); //获取窗口句柄
-    long long int sty = GetWindowLongPtrA(hWnd, GWL_STYLE); //获取窗口样式
-    sty = sty & ~WS_SIZEBOX & ~WS_MAXIMIZEBOX & ~WS_MINIMIZEBOX; //去除可变化大小,最大,最小化按钮,~是取反,&是与,这是位运算相关的知识了
-    SetWindowLongPtrA(hWnd, GWL_STYLE, sty); //设置窗体不可更改大小,不可最大化
-}
 
 void change_system() {
     //改变控制台颜色
@@ -31,13 +25,29 @@ void change_system() {
     set_size(WIDTH, HEIGHT);
     //让鼠标无效化
     hide_console_cursor();
-    //让控制台不能放大和缩小
-    no_big_small();
+    //屏蔽控制台最小按钮和关闭按钮
+    HWND hwnd = GetConsoleWindow();
+    HMENU hmenu = GetSystemMenu(hwnd, false);
+    RemoveMenu(hmenu, SC_CLOSE, MF_BYCOMMAND);
+    LONG style = GetWindowLong(hwnd, GWL_STYLE);
+    style &= ~(WS_MINIMIZEBOX);
+    SetWindowLong(hwnd, GWL_STYLE, style);
+    SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    ShowWindow(hwnd, SW_SHOWNORMAL);
+    DestroyMenu(hmenu);
+    ReleaseDC(hwnd, NULL);
 }
 
 void change_graph() {
     //初始化画布
-    initgraph(GRAPH_WIDTH, GRAPH_HEIGHT);
+    /*
+    *   值             含义
+        EX_DBLCLKS   在绘图窗口中支持鼠标双击事件。
+        EX_NOCLOSE   禁用绘图窗口的关闭按钮。
+        EX_NOMINIMIZE   禁用绘图窗口的最小化按钮。
+        EX_SHOWCONSOLE   显示控制台窗口。
+    */
+    initgraph(GRAPH_WIDTH, GRAPH_HEIGHT, EX_NOCLOSE + EX_NOMINIMIZE);
     //设置标题
     SetWindowText(GetHWnd(), "银行业务模拟与离散事件模拟");//SetConsleTitle
     cleardevice();
