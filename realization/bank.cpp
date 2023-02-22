@@ -25,10 +25,10 @@ static const int distance = 10;
 //人的半径
 static const int human_radius = 20;
 //处理时间
-static const int processing_time = 1;
+static const int processing_time = 10;
 //产生人的速度
 ///当前已在函数中转为了随机数
-static int produce_human_minute = 200;
+static int produce_human_minute = 200 * processing_time;
 
 //刷新次数
 static long long int flush_number = 0;
@@ -198,9 +198,9 @@ void graph_human() {
     //判断当前的人数
     if (now_human_number < HUMAN_NUMBER) {
         //转为随机数
-        produce_human_minute = rand() % 200 + 1;
+        int produce_human_time = rand() % produce_human_minute + 1;
         //随机生成人
-        if (flush_number % produce_human_minute == 0) {
+        if (flush_number % produce_human_time == 0) {
             human *human1;
             human1 = (struct human *) malloc(sizeof(struct human));
             human1->x =
@@ -221,10 +221,10 @@ void graph_human() {
             human1->speed = human_speed;
             human1->y = (get_into_up_line + get_into_down_line) / 2;
             human1->radius = human_radius;
-            sprintf(human1->name, "顾客%d\t", now_human_number + 1);
+            sprintf(human1->name, "客户%-2d\t", now_human_number + 1);
             sprintf(human1->leave_time, "");
             //产生时间
-            sprintf(human1->produce_time, "%2d:%2d:%2d\t", get_now_hour(), get_now_minute(), get_now_second());
+            sprintf(human1->produce_time, "%02d:%02d:%02d\t", get_now_hour(), get_now_minute(), get_now_second());
             //处理时间
             human1->processing_time = rand() % processing_time + 1;
             //加入数组中
@@ -248,7 +248,7 @@ void graph_time() {
 }
 
 //画主体
-void *graph_theme(void *pVoid) {
+[[noreturn]] void *graph_theme(void *pVoid) {
     srand((int) time(NULL));  //用时间作为种子对随机数进行操作
     //初始化文件
     if ((file = fopen("E://bank.txt", "a+")) == NULL) {
@@ -292,9 +292,9 @@ void *graph_theme(void *pVoid) {
             goto flush;
         }
     }
-    EndBatchDraw();
-    //关闭画布
-    closegraph();
+    //EndBatchDraw();
+    ////关闭画布
+    //closegraph();
 }
 
 //返回当前柜台的人数最少的柜台 从0开始
@@ -361,6 +361,12 @@ void find_counter(human *pHuman) {
     }
     if (!pHuman->is_find_counter) {
         pHuman->is_find_counter = true;
+        //一共处理多少个人
+        ++(target_counter->count_number);
+        //一共处理的多少时间
+        target_counter->count_all_time += pHuman->processing_time;
+        //当前需要处理多少时间
+        target_counter->count_time += pHuman->processing_time;
         //判断自己是不是第一个
         is_now_counter_first(pHuman);
     }
@@ -544,12 +550,6 @@ void change_human() {
                 target_counter->humans[target_counter->number] = (struct human *) malloc(sizeof(struct human));
                 //将人加进去
                 target_counter->humans[target_counter->number++] = now_human;
-                //一共处理了多少个人
-                ++(target_counter->count_number);
-                //一共处理的多少时间
-                target_counter->count_all_time += now_human->processing_time;
-                //当前需要处理多少时间
-                target_counter->count_time += now_human->processing_time;
                 now_human->target_counter = target_counter;
                 //看是哪个柜台
                 now_human->counter_num = least;
@@ -583,11 +583,15 @@ void change_human() {
 
 //关闭时进行记录进行记录
 void record_all() {
-    record_human();
-    //要刷新
-    my_strcat(NULL);
-    record_counter();
-    my_strcat(NULL);
+    if (now_human_number == 0) {
+        strcat(information, "本次无客户\n");
+    }else {
+        record_human();
+        //要刷新
+        my_str_splice(NULL);
+        record_counter();
+    }
+    my_str_splice(NULL);
     sprintf(information, "本次运行从%d年 %d月 %d日 %d点 %d分 %d秒 结束\n", get_now_year(),
             get_now_month(), get_now_day(),
             get_now_hour(), get_now_minute(), get_now_second());
@@ -596,57 +600,53 @@ void record_all() {
 //记录人
 void record_human() {
     int i;
-    if (now_human_number == 0) {
-        strcat(information, "本次无客户\n");
-        return;
-    }
     strcat(information, "--------------------------------客户--------------------------------\n");
     strcat(information,
            "姓名\t\t进入时间\t\t离开时间\t\t是否开始办理业务\t\t办理业务柜台\t\t开始办理业务时间\t\t处理时间\t\t结束办理业务时间\n");
-    my_strcat(information);
+    my_str_splice(information);
     for (i = 0; i < now_human_number; ++i) {
         human *now_human = record_humans[i];
         //姓名
-        my_strcat(now_human->name);
+        my_str_splice(now_human->name);
         //进入时间
-        my_strcat(now_human->produce_time);
+        my_str_splice(now_human->produce_time);
         //离开时间
         if (strcmp("", now_human->leave_time) == 0) {
             //如果还没有开始
             sprintf(information, "\t\t");
-            my_strcat(information);
+            my_str_splice(information);
         }
-        my_strcat(now_human->leave_time);
+        my_str_splice(now_human->leave_time);
         //是否开始办理业务
         if (now_human->is_start) {
             //开始办理了
-            strcat(information, "\t是\t");
-            my_strcat(information);
+            strcat(information, "\t是\t\t");
+            my_str_splice(information);
             //办理业务的柜台
             sprintf(information, "\t%s\t\t", now_human->target_counter->name);
-            my_strcat(information);
+            my_str_splice(information);
             //开始办理业务时间
-            sprintf(information, "%2d：%02d\t", now_human->start_minute,
+            sprintf(information, "%02d:%02d:%02d\t", now_human->start_hour, now_human->start_minute,
                     now_human->start_second);
-            my_strcat(information);
+            my_str_splice(information);
             //处理时间
-            sprintf(information, "\t\t%s\t", now_human->produce_time);
-            my_strcat(information);
+            sprintf(information, "\t\t%d分钟\t", now_human->processing_time);
+            my_str_splice(information);
             if (now_human->is_success) {
                 //已经成功办理
-                sprintf(information, "%2d：%02d\t", now_human->end_minute,
+                sprintf(information, "\t\t%02d:%02d:%02d\t",now_human->end_hour, now_human->end_minute,
                         now_human->end_second);
-                my_strcat(information);
+                my_str_splice(information);
             }
         } else {
             //没有开始办理 直接撤
-            strcat(information, "否");
+            strcat(information, "\t否");
         }
         strcat(information, "\n");
-        my_strcat(information);
+        my_str_splice(information);
 
     }
-    my_strcat(information);
+    my_str_splice(information);
 }
 
 //记录柜台
@@ -654,19 +654,19 @@ void record_counter() {
     strcat(information, "--------------------------------柜台--------------------------------\n");
     strcat(information,
            "名称\t\t共计办理业务人数\t\t共计办理时间\t\t平均办理业务时间\n");
-    my_strcat(information);
+    my_str_splice(information);
     int i;
     for (i = 0; i < COUNTER_COUNT; ++i) {
         counter *now_counter = counters[i];
-        my_strcat(now_counter->name);
+        my_str_splice(now_counter->name);
         if (now_human_number == 0 || now_counter->count_number == 0) {
             //当前没有人
             strcat(information,"\n");
         }else {
-            sprintf(information, "\t%d\t\t%d\t\t%d\n", now_counter->count_number, now_counter->count_all_time,
+            sprintf(information, "\t%d人\t\t\t\t%d分钟\t\t\t%d分钟\n", now_counter->count_number, now_counter->count_all_time,
                     (now_counter->count_all_time / now_counter->count_number));
         }
-        my_strcat(information);
+        my_str_splice(information);
     }
 }
 
@@ -717,7 +717,7 @@ void button(int x, int y, int w, int h, TCHAR *text) {
 }
 
 //拼接字符串
-void my_strcat(char msg[]) {
+void my_str_splice(char msg[]) {
     if (msg != NULL) {
         if (information != msg) {
             strcat(msg, "\t");
@@ -729,33 +729,4 @@ void my_strcat(char msg[]) {
     //
     fputs(information, file);
     sprintf(information, "");
-}
-
-void welcome(bool *pBoolean) {
-    //获取当前时间
-    int minute = get_now_hour();
-    printf("                    ***-------------------------------------------------------------------***\n");
-    printf("                                                                                               \n");
-    printf("						欢迎来到					\n");
-    Sleep(SLEEP);//沉睡1.5秒
-    printf("						我的银行					\n");
-    printf("                                                                                               \n");
-    printf("                    ***-------------------------------------------------------------------***\n");
-    Sleep(SLEEP);//沉睡1.5秒
-    printf("                    =========================================================================\n");
-    printf("                    *                                                                       *\n");
-    printf("                    *                       本银行营业时间为早上9点-下午17点                *\n");
-    printf("                    *                       节假日不放假                                    *\n");
-    if (minute > CLOSING_TIME || minute < WORK_HOURS) {
-        //不在营业时间
-        printf("                    *                       当前为休息时间                                  *\n");
-        printf("                    *                       请点击屏幕退出银行   	  		    *\n");
-    } else {
-        *pBoolean = true;
-        printf("                    *                       当前为营业时间                                  *\n");
-        printf("                    *                       请点击屏幕进入银行   	  		    *\n");
-    }
-    printf("                    *                                                                       *\n");
-    printf("                    =========================================================================\n");
-    Sleep(SLEEP);//1.5秒后进入程序
 }

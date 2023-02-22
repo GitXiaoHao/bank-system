@@ -6,15 +6,8 @@
 #include "times.h"
 #include "stdlib.h"
 #include <synchapi.h>
-#include <graphics.h>
 #include <pthread.h>
 #include "sys.h"
-//沉睡时间
-#define SLEEP 1500
-//上班时间
-#define WORK_HOURS 9
-//下班时间
-#define CLOSING_TIME 17
 //柜台数量
 #define COUNTER_COUNT 4
 //刷新时间
@@ -88,8 +81,7 @@ typedef struct counter {
 } counter;
 
 
-//欢迎界面
-void welcome(bool *pBoolean);
+
 
 //直接调用 进行绘图
 static void graph_main();
@@ -119,7 +111,7 @@ void graph_passageway();
 void button(int x, int y, int w, int h, TCHAR *text);
 
 //拼接字符串
-void my_strcat(char *msg);
+void my_str_splice(char *msg);
 
 //返回当前柜台的人数最少的柜台 从0开始
 int now_counter_human_number_least();
@@ -167,5 +159,5 @@ void change_human();
 void *add_button_listen(void *pVoid1);
 
 //画主体
-void *graph_theme(void *pVoid);
+[[noreturn]] void *graph_theme(void *pVoid);
 

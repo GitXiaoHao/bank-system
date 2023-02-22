@@ -5,7 +5,6 @@
 #ifndef CURRICULUM_TIMES_H
 #define CURRICULUM_TIMES_H
 
-#include <stdio.h>
 #include "time.h"
 
 //获取当前月份

@@ -3,40 +3,7 @@
 //
 #include "../include/sys.h"
 
-void set_size(unsigned uCol, unsigned uLine) {
-    char cmd[64];
-    sprintf(cmd, "mode con cols=%d lines=%d", uCol, uLine);
-    system(cmd);
-}
 
-void hide_console_cursor() {
-    CONSOLE_CURSOR_INFO cursor_info = {1, 0};
-    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE),
-                         &cursor_info);
-}
-
-
-void change_system() {
-    //改变控制台颜色
-    system("color 70");
-    //改变标题
-    SetConsoleTitle(TITLE);
-    //改变大小
-    set_size(WIDTH, HEIGHT);
-    //让鼠标无效化
-    hide_console_cursor();
-    //屏蔽控制台最小按钮和关闭按钮
-    HWND hwnd = GetConsoleWindow();
-    HMENU hmenu = GetSystemMenu(hwnd, false);
-    RemoveMenu(hmenu, SC_CLOSE, MF_BYCOMMAND);
-    LONG style = GetWindowLong(hwnd, GWL_STYLE);
-    style &= ~(WS_MINIMIZEBOX);
-    SetWindowLong(hwnd, GWL_STYLE, style);
-    SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-    ShowWindow(hwnd, SW_SHOWNORMAL);
-    DestroyMenu(hmenu);
-    ReleaseDC(hwnd, NULL);
-}
 
 void change_graph() {
     //初始化画布
