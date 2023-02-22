@@ -25,7 +25,7 @@ static const int distance = 10;
 //人的半径
 static const int human_radius = 20;
 //处理时间
-static const int processing_time = 10;
+static const int processing_time = 5;
 //产生人的速度
 ///当前已在函数中转为了随机数
 static int produce_human_minute = 200 * processing_time;
@@ -198,7 +198,7 @@ void graph_human() {
     //判断当前的人数
     if (now_human_number < HUMAN_NUMBER) {
         //转为随机数
-        int produce_human_time = rand() % produce_human_minute + 1;
+        int produce_human_time = rand() % (produce_human_minute + leave_human_number) + 1;
         //随机生成人
         if (flush_number % produce_human_time == 0) {
             human *human1;
@@ -357,6 +357,9 @@ void find_counter(human *pHuman) {
             (pHuman->now_counter_number * (pHuman->radius * 2));
     if (pHuman->y - pHuman->radius > y) {
         pHuman->y = pHuman->y - pHuman->speed;
+        return;
+    } else if (pHuman->y - pHuman->radius < y) {
+        pHuman->y = pHuman->y + pHuman->speed;
         return;
     }
     if (!pHuman->is_find_counter) {
@@ -585,7 +588,7 @@ void change_human() {
 void record_all() {
     if (now_human_number == 0) {
         strcat(information, "本次无客户\n");
-    }else {
+    } else {
         record_human();
         //要刷新
         my_str_splice(NULL);
@@ -634,7 +637,7 @@ void record_human() {
             my_str_splice(information);
             if (now_human->is_success) {
                 //已经成功办理
-                sprintf(information, "\t\t%02d:%02d:%02d\t",now_human->end_hour, now_human->end_minute,
+                sprintf(information, "\t\t%02d:%02d:%02d\t", now_human->end_hour, now_human->end_minute,
                         now_human->end_second);
                 my_str_splice(information);
             }
@@ -661,10 +664,11 @@ void record_counter() {
         my_str_splice(now_counter->name);
         if (now_human_number == 0 || now_counter->count_number == 0) {
             //当前没有人
-            strcat(information,"\n");
-        }else {
-            sprintf(information, "\t%d人\t\t\t\t%d分钟\t\t\t%d分钟\n", now_counter->count_number, now_counter->count_all_time,
-                    (now_counter->count_all_time / now_counter->count_number));
+            strcat(information, "\n");
+        } else {
+            sprintf(information, "\t%d人\t\t\t\t%d分钟\t\t\t%ld分钟\n", now_counter->count_number,
+                    now_counter->count_all_time,
+                    (lround (((now_counter->count_all_time * 1.0) / now_counter->count_number))));
         }
         my_str_splice(information);
     }
@@ -723,8 +727,8 @@ void my_str_splice(char msg[]) {
             strcat(msg, "\t");
             strcat(information, msg);
         }
-    }else{
-        strcat(information,"\n");
+    } else {
+        strcat(information, "\n");
     }
     //
     fputs(information, file);

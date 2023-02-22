@@ -8,6 +8,7 @@
 #include <synchapi.h>
 #include <pthread.h>
 #include "sys.h"
+#include "math.h"
 //柜台数量
 #define COUNTER_COUNT 4
 //刷新时间
