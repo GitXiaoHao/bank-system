@@ -14,7 +14,7 @@
 //刷新时间
 #define FLASH_SLEEP 100
 //一天的人数
-#define HUMAN_NUMBER 100
+#define HUMAN_NUMBER 99
 //人
 typedef struct human {
     char name[50] = "";
@@ -52,6 +52,8 @@ typedef struct human {
     bool is_find_counter = false;
     //是否开始办理业务
     bool is_start = false;
+    //是否退出了
+    bool is_exit_bank = false;
     //产生时间
     char produce_time[50] = "";
     //离开时间
@@ -80,8 +82,6 @@ typedef struct counter {
     int count_time;
     struct human *humans[HUMAN_NUMBER / COUNTER_COUNT];
 } counter;
-
-
 
 
 //直接调用 进行绘图
@@ -116,6 +116,9 @@ void my_str_splice(char *msg);
 
 //返回当前柜台的人数最少的柜台 从0开始
 int now_counter_human_number_least();
+
+//转为整形
+int conv(char arr[]);
 
 //判断人是否到通道顶端了 需要往上走
 bool is_top(human *pHuman);

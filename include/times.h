@@ -7,6 +7,9 @@
 
 #include "time.h"
 
+static time_t tmp_cal_ptr;
+static struct tm *tmp_ptr;
+
 //获取当前月份
 int get_now_month();
 //获取当前是这个月的第几天

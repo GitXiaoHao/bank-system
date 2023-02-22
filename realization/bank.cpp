@@ -42,7 +42,7 @@ static int get_into_up_right_line = 160;
 //下面一条线的最右边的部分
 static int get_into_down_right_line = get_into_up_right_line + 80;
 //高度
-static int get_into_level = GRAPH_HEIGHT - 200;
+static int get_into_level = GRAPH_HEIGHT - 120;
 ///退出的通道
 //通道距离
 static int export_distance = 80;
@@ -159,7 +159,7 @@ void graph_passageway() {
     ////左边通道
     line(0, get_into_down_line, get_into_down_right_line, get_into_down_line);
     line(0, get_into_up_line, get_into_up_right_line, get_into_up_line);
-
+    //左边通道的高处
     line(get_into_up_right_line, get_into_up_line, get_into_up_right_line, get_into_level);
     line(get_into_down_right_line, get_into_down_line, get_into_down_right_line, get_into_level);
     ////右边通道
@@ -196,7 +196,7 @@ void graph_button() {
 void graph_human() {
     change_human();
     //判断当前的人数
-    if (now_human_number < HUMAN_NUMBER) {
+    if (now_human_number < HUMAN_NUMBER && leave_human_number <= 30) {
         //转为随机数
         int produce_human_time = rand() % (produce_human_minute + leave_human_number) + 1;
         //随机生成人
@@ -216,6 +216,7 @@ void graph_human() {
             human1->is_start =
             human1->is_exit_passageway =
             human1->is_success =
+            human1->is_exit_bank =
             human1->is_find_counter = false;
             human1->target_counter = NULL;
             human1->speed = human_speed;
@@ -353,13 +354,10 @@ void find_counter(human *pHuman) {
         return;
     }
     //判断y轴
-    int y = (target_counter->down_y) + (distance * pHuman->now_counter_number) +
+    int y = (target_counter->down_y) + (distance * (pHuman->now_counter_number)) +
             (pHuman->now_counter_number * (pHuman->radius * 2));
     if (pHuman->y - pHuman->radius > y) {
         pHuman->y = pHuman->y - pHuman->speed;
-        return;
-    } else if (pHuman->y - pHuman->radius < y) {
-        pHuman->y = pHuman->y + pHuman->speed;
         return;
     }
     if (!pHuman->is_find_counter) {
@@ -409,8 +407,10 @@ void exit_bank(human *pHuman) {
         //出界了
         ///删除
         remove_human(pHuman);
+        //是否退出了
+        pHuman->is_exit_bank = true;
         //记录
-        sprintf(pHuman->leave_time, "%2d:%2d:%2d\t", get_now_hour(), get_now_minute(), get_now_second());
+        sprintf(pHuman->leave_time, "%02d:%02d:%02d\t", get_now_hour(), get_now_minute(), get_now_second());
         return;
     }
     //判断当前是哪个柜台
@@ -605,7 +605,7 @@ void record_human() {
     int i;
     strcat(information, "--------------------------------客户--------------------------------\n");
     strcat(information,
-           "姓名\t\t进入时间\t\t离开时间\t\t是否开始办理业务\t\t办理业务柜台\t\t开始办理业务时间\t\t处理时间\t\t结束办理业务时间\n");
+           "姓名\t\t进入时间\t\t离开时间\t\t是否开始办理业务\t\t办理业务柜台\t\t开始办理业务时间\t\t处理时间\t\t结束办理业务时间\t\t逗留时间\n");
     my_str_splice(information);
     for (i = 0; i < now_human_number; ++i) {
         human *now_human = record_humans[i];
@@ -640,6 +640,21 @@ void record_human() {
                 sprintf(information, "\t\t%02d:%02d:%02d\t", now_human->end_hour, now_human->end_minute,
                         now_human->end_second);
                 my_str_splice(information);
+                if (now_human->is_exit_bank) {
+                    ///逗留时间
+                    //截取字符串
+                    char str[2];
+                    strncpy(str, now_human->produce_time + 3, 2);
+                    int start = conv(str);
+                    strncpy(str, now_human->leave_time + 3, 2);
+                    int end = conv(str);
+                    int stay_time = end - start;
+                    if (end + start > 60) {
+                        stay_time = 60 - start + end;
+                    }
+                    sprintf(information, "\t\t%02d分钟", stay_time);
+                    my_str_splice(information);
+                }
             }
         } else {
             //没有开始办理 直接撤
@@ -656,7 +671,7 @@ void record_human() {
 void record_counter() {
     strcat(information, "--------------------------------柜台--------------------------------\n");
     strcat(information,
-           "名称\t\t共计办理业务人数\t\t共计办理时间\t\t平均办理业务时间\n");
+           "名称\t\t共计办理业务人数\t\t共计办理时间\t\t\t平均办理业务时间\n");
     my_str_splice(information);
     int i;
     for (i = 0; i < COUNTER_COUNT; ++i) {
@@ -666,9 +681,9 @@ void record_counter() {
             //当前没有人
             strcat(information, "\n");
         } else {
-            sprintf(information, "\t%d人\t\t\t\t%d分钟\t\t\t%ld分钟\n", now_counter->count_number,
+            sprintf(information, "\t%d人\t\t\t\t%4d分钟\t\t\t\t%ld分钟\n", now_counter->count_number,
                     now_counter->count_all_time,
-                    (lround (((now_counter->count_all_time * 1.0) / now_counter->count_number))));
+                    (lround(((now_counter->count_all_time * 1.0) / now_counter->count_number))));
         }
         my_str_splice(information);
     }
@@ -733,4 +748,21 @@ void my_str_splice(char msg[]) {
     //
     fputs(information, file);
     sprintf(information, "");
+}
+
+//转为整形
+int conv(char arr[]) {
+    int i;
+    int n;
+    int sum = 0;
+    n = strlen(arr);
+    for (i = 0; i < n; i++) {
+        if (i == 0 && arr[i] == '0') {
+            continue;
+        }
+        if (arr[i] >= '0' && arr[i] <= '9') {
+            sum = sum * 10 + (arr[i] - '0');
+        }
+    }
+    return sum;
 }

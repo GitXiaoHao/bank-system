@@ -3,9 +3,6 @@
 //
 #include "../include/times.h"
 
-static time_t tmp_cal_ptr;
-static struct tm *tmp_ptr;
-
 //先获取时间
 void init() {
     time(&tmp_cal_ptr);
